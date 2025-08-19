@@ -1,0 +1,95 @@
+plugins {
+    // Apply the Android Application plugin.
+    id "com.android.application"
+    // Apply the Kotlin Android plugin for Kotlin support.
+    id "org.jetbrains.kotlin.android"
+    // Apply the Flutter Gradle plugin. This must be applied after Android and Kotlin plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+// Load local properties, typically used to locate the Flutter SDK.
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+// Define the Flutter SDK root.
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+android {
+    // The compileSdkVersion is the API level your app is compiled against.
+    // It's recommended to use the latest stable API level.
+    // Flutter's plugin provides this value based on your Flutter SDK.
+    compileSdk flutter.compileSdkVersion
+
+    // The namespace is used to generate the R class and other build artifacts.
+    // It should match your package name.
+    namespace "com.example.quadratic_solver"
+
+    defaultConfig {
+        // The application ID must be unique across all apps on Google Play.
+        applicationId "com.example.quadratic_solver"
+        // The minSdkVersion is the minimum API level required to run your app.
+        // Flutter typically requires API level 21 or higher.
+        minSdk flutter.minSdkVersion
+        // The targetSdkVersion indicates the API level that your app is designed to run on.
+        // It's recommended to set this to the latest stable API level.
+        targetSdk flutter.targetSdkVersion
+        // The versionCode is an integer that represents the version of the application code.
+        // It should be incremented for each release.
+        versionCode flutter.versionCode
+        // The versionName is a string that represents the user-visible version of the application.
+        versionName flutter.versionName
+
+        // Specifies the test instrumentation runner to use for Android tests.
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for release builds.
+            // signingConfig signingConfigs.release
+
+            // Enables code shrinking, resource shrinking, and obfuscation for your release build.
+            // Set to true to enable ProGuard.
+            minifyEnabled true
+            // Specifies the ProGuard rules file to use.
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Shrinks unused resources.
+            shrinkResources true
+        }
+    }
+
+    // Configure Java compatibility for source and target.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // Configure Kotlin compatibility.
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+// This block tells the Flutter plugin where to find your Flutter project.
+flutter {
+    source '../..'
+}
+
+dependencies {
+    // Standard Kotlin library. The version is typically defined in the project-level build.gradle.
+    // Using a common version here for completeness.
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
+
+    // Test dependencies for Android unit and instrumentation tests.
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
