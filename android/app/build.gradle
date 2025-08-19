@@ -51,10 +51,24 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Add signing configurations for release builds.
+    // In a real CI/CD environment, these values would typically come from environment variables (GitHub Secrets).
+    signingConfigs {
+        release {
+            // Path to your keystore file. For CI/CD, you might upload this as a secret file or generate it.
+            // Using System.getenv() to fetch from environment variables for security.
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "upload-keystore.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: ""
+            keyPassword System.getenv("KEY_PASSWORD") ?: ""
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for release builds.
-            // signingConfig signingConfigs.release
+            // UNCOMMENTED and applied the release signing config.
+            signingConfig signingConfigs.release
 
             // Enables code shrinking, resource shrinking, and obfuscation for your release build.
             // Set to true to enable ProGuard.
