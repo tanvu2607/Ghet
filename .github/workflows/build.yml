@@ -33,8 +33,28 @@ jobs:
       - name: Run Flutter tests
         run: flutter test
 
+      - name: Decode Android Keystore
+        # Bước này giải mã file keystore được mã hóa base64 từ GitHub Secrets
+        # và lưu nó dưới dạng 'upload-keystore.jks' trong thư mục android/app.
+        # Đảm bảo bạn đã cấu hình các secret này trong cài đặt kho lưu trữ GitHub của mình:
+        # ANDROID_KEYSTORE_BASE64 (nội dung file .jks được mã hóa base64)
+        # ANDROID_KEYSTORE_PASSWORD
+        # ANDROID_KEY_ALIAS
+        # ANDROID_KEY_PASSWORD
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+        # Bước này chỉ nên chạy nếu secret được cung cấp. Nó rất quan trọng cho các bản build release.
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+
       - name: Build Android APK
         run: flutter build apk --release
+        env:
+          # Các biến môi trường này được sử dụng bởi android/app/build.gradle
+          # để ký APK release.
+          KEYSTORE_PATH: android/app/upload-keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
