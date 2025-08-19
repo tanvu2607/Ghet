@@ -16,6 +16,27 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   final TextEditingController _cController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with provider's current values (if any)
+    final provider = context.read<CalculatorProvider>();
+    _aController.text = provider.a;
+    _bController.text = provider.b;
+    _cController.text = provider.c;
+
+    // Add listeners to update provider's state as user types
+    _aController.addListener(() {
+      context.read<CalculatorProvider>().setA(_aController.text);
+    });
+    _bController.addListener(() {
+      context.read<CalculatorProvider>().setB(_bController.text);
+    });
+    _cController.addListener(() {
+      context.read<CalculatorProvider>().setC(_cController.text);
+    });
+  }
+
+  @override
   void dispose() {
     _aController.dispose();
     _bController.dispose();
@@ -24,12 +45,17 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _calculate() {
-    final provider = context.read<CalculatorProvider>();
-    final double? a = double.tryParse(_aController.text);
-    final double? b = double.tryParse(_bController.text);
-    final double? c = double.tryParse(_cController.text);
+    // The provider's internal state is already updated by the listeners on the TextEditingControllers.
+    // So, we just need to call solveEquation.
+    context.read<CalculatorProvider>().solveEquation();
+  }
 
-    provider.calculateQuadraticEquation(a, b, c);
+  void _clearInputs() {
+    context.read<CalculatorProvider>().clearInputs();
+    // Manually clear controllers as well, since they are not directly bound to provider's strings
+    _aController.clear();
+    _bController.clear();
+    _cController.clear();
   }
 
   @override
@@ -39,6 +65,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         title: const Text('Giải Phương Trình Bậc Hai'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: _clearInputs,
+            tooltip: 'Xóa tất cả',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -90,9 +123,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             const SizedBox(height: 24.0),
             Consumer<CalculatorProvider>(
               builder: (context, provider, child) {
-                if (provider.errorMessage != null) {
+                final QuadraticResult? result = provider.result;
+                if (result == null) {
+                  return const SizedBox.shrink(); // Ẩn nếu không có kết quả hoặc lỗi
+                }
+
+                // Hiển thị thông báo lỗi nếu isError là true
+                if (result.isError) {
                   return Text(
-                    'Lỗi: ${provider.errorMessage}',
+                    'Lỗi: ${result.message}', // Sử dụng result.message trực tiếp
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
                       fontSize: 16.0,
@@ -100,8 +139,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     ),
                     textAlign: TextAlign.center,
                   );
-                } else if (provider.result != null) {
-                  final QuadraticResult result = provider.result!;
+                } else {
+                  // Hiển thị kết quả thành công
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -113,25 +152,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ),
                       const SizedBox(height: 8.0),
-                      if (result.x1 != null && result.x2 != null)
-                        Text(
-                          'x1 = ${result.x1!.toStringAsFixed(4)}',
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
-                      if (result.x1 != null && result.x2 != null)
-                        Text(
-                          'x2 = ${result.x2!.toStringAsFixed(4)}',
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
-                      if (result.message != null)
-                        Text(
-                          result.message!,
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
+                      // Sử dụng result.toString() để hiển thị kết quả một cách ngắn gọn dựa trên logic của nó
+                      Text(
+                        result.toString(),
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
                     ],
                   );
                 }
-                return const SizedBox.shrink(); // Hide if no result or error
               },
             ),
           ],
