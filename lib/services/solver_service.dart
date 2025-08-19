@@ -29,12 +29,12 @@ class SolverService {
       final double sqrtDelta = sqrt(delta);
       final double x1 = (-b + sqrtDelta) / (2 * a);
       final double x2 = (-b - sqrtDelta) / (2 * a);
-      return QuadraticResult.success(x1: x1, x2: x2);
+      return QuadraticResult.twoRoots(x1, x2);
     }
     // Trường hợp 3: delta = 0 (Một nghiệm thực kép)
     else if (delta == 0) {
       final double x = -b / (2 * a);
-      return QuadraticResult.success(x1: x, x2: x); // x1 và x2 bằng nhau cho nghiệm kép
+      return QuadraticResult.doubleRoot(x); // x1 và x2 bằng nhau cho nghiệm kép
     }
     // Trường hợp 4: delta < 0 (Phương trình vô nghiệm thực)
     else {
